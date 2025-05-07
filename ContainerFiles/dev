@@ -1,0 +1,31 @@
+FROM ghcr.io/ublue-os/ubuntu-toolbox:latest
+
+ARG DOTFILES_REPO=https://github.com/Rom3dius/hyprome-dev-dots
+ARG NEOVIM_REPO=https://github.com/Rom3dius/lazyvim-romedius
+
+LABEL com.github.containers.toolbox="true" \
+      usage="This image is meant to be used with the toolbox or distrobox command" \
+      summary="A cloud-native terminal experience (for hyprome)" \
+      maintainer="r@romedius.xyz"
+
+# Copy the setup scripts and package list
+COPY ../scripts/dev.sh /
+COPY ../scripts/dev-shims.sh /
+COPY ../packages/dev.packages /
+COPY ../scripts/omz-install.sh /usr/local/bin/
+
+# Run the setup scripts
+RUN chmod +x dev.sh dev-shims.sh /usr/local/bin/omz-install.sh && /dev.sh
+
+# Install dot-files
+RUN HOME=/etc/skel yadm clone --no-bootstrap ${DOTFILES_REPO} \
+ && HOME=/etc/skel yadm alt
+RUN mkdir -p /etc/skel/.extras
+
+# Install neovim dotfiles
+RUN mkdir -p /etc/skel/.config/nvim
+RUN git clone ${NEOVIM_REPO} /etc/skel/.config/nvim
+
+RUN chmod 0755 /home
+
+RUN rm /dev.sh /dev-shims.sh /dev.packages
