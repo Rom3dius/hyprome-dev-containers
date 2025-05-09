@@ -6,9 +6,6 @@ APT="apt-get -yq --no-install-recommends" # auto‑yes + quiet
 # Symlink distrobox shims
 ./dev-shims.sh
 
-# Install oh-my-zsh
-HOME=/etc/skel USER=skel omz-install.sh
-
 # Add ppa repositories
 # fastfetch
 add-apt-repository ppa:zhangsongcui3371/fastfetch
