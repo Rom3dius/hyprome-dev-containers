@@ -1,7 +1,7 @@
 #!/bin/sh
 
-export DEBIAN_FRONTEND=noninteractive     # disable prompts
-APT="apt-get -yq --no-install-recommends" # auto‑yes + quiet
+export DEBIAN_FRONTEND=noninteractive # disable prompts
+APT="apt-get -y"                      # auto‑yes + quiet
 
 # Symlink distrobox shims
 ./dev-shims.sh
@@ -22,4 +22,4 @@ add-apt-repository ppa:zhangsongcui3371/fastfetch
 # Update the container and install packages
 $APT update
 $APT upgrade
-grep -v '^#' ./dev.packages | xargs $APT install
+grep -v '^#' ./hyprome-dev.packages | xargs $APT install
