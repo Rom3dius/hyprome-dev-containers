@@ -6,6 +6,13 @@ APT="apt-get -y"                      # auto‑yes + quiet
 # Symlink distrobox shims
 ./dev-shims.sh
 
+# Install brew
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+
+# fzf
+brew install fzf
+
 # Add ppa repositories
 # fastfetch
 add-apt-repository ppa:zhangsongcui3371/fastfetch
