@@ -10,8 +10,14 @@ APT="apt-get -yq --no-install-recommends" # auto‑yes + quiet
 # fastfetch
 add-apt-repository ppa:zhangsongcui3371/fastfetch
 # gh
-sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-key C99B11DEB97541F0
-sudo apt-add-repository https://cli.github.com/packages
+# Install GitHub CLI (gh) from official repo using 'stable' codename
+(type -p wget >/dev/null || ($APT update && $APT install wget)) &&
+  sudo mkdir -p -m 755 /etc/apt/keyrings &&
+  out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg &&
+  sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg <$out >/dev/null &&
+  sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg &&
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" |
+  sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
 
 # Update the container and install packages
 $APT update
