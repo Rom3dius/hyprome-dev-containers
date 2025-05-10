@@ -1,32 +1,14 @@
-#!/bin/sh
+#!/bin/bash
 
-export DEBIAN_FRONTEND=noninteractive # disable prompts
-APT="apt-get -y"                      # auto‑yes + quiet
-
-# Symlink distrobox shims
+# Run shim setup
 ./dev-shims.sh
 
-# Install brew
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+# Add COPRs
+dnf -y copr enable cdayjr/yadm
 
-# fzf
-brew install fzf
+# Update and install packages using dnf
+dnf -y update
+dnf -y install $(grep -v '^#' ./hyprome-dev.packages | xargs)
 
-# Add ppa repositories
-# fastfetch
-add-apt-repository ppa:zhangsongcui3371/fastfetch
-# gh
-# Install GitHub CLI (gh) from official repo using 'stable' codename
-(type -p wget >/dev/null || ($APT update && $APT install wget)) &&
-  sudo mkdir -p -m 755 /etc/apt/keyrings &&
-  out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg &&
-  sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg <$out >/dev/null &&
-  sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg &&
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" |
-  sudo tee /etc/apt/sources.list.d/github-cli.list >/dev/null
-
-# Update the container and install packages
-$APT update
-$APT upgrade
-grep -v '^#' ./hyprome-dev.packages | xargs $APT install
+# Optional: Clean up
+dnf clean all
