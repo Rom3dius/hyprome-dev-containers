@@ -10,6 +10,19 @@ COPY ../scripts/hyprome-dev/dev-shims.sh /
 COPY ../scripts/hyprome-dev/dev.sh /
 COPY ../packages/hyprome-dev.packages /
 
+# Install brew
+RUN useradd -m -u 1000 brew && echo 'brew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
+USER brew
+ENV HOME=/home/brew
+
+RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
+    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.profile
+
+ENV PATH=/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH
+RUN brew update --force && brew cleanup
+
+USER root
+
 # Run the setup scripts
 RUN chmod +x dev.sh dev-shims.sh && /dev.sh
 
