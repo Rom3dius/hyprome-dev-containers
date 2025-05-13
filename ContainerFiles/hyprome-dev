@@ -12,9 +12,9 @@ COPY ../packages/hyprome-dev.packages /
 COPY ../packages/hyprome-dev.brew /
 
 # Install brew
-RUN useradd -m -u 1000 brew && echo 'brew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
-USER brew
-ENV HOME=/home/brew
+RUN useradd -m -u 1000 linuxbrew && echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
+USER linuxbrew
+ENV HOME=/home/linuxbrew
 
 RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
     echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.profile
