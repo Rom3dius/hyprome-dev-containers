@@ -9,6 +9,7 @@ LABEL com.github.containers.toolbox="true" \
 COPY ../scripts/hyprome-dev/dev-shims.sh /
 COPY ../scripts/hyprome-dev/dev.sh /
 COPY ../packages/hyprome-dev.packages /
+COPY ../packages/hyprome-dev.brew /
 
 # Install brew
 RUN useradd -m -u 1000 brew && echo 'brew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
