@@ -24,6 +24,9 @@ RUN brew update --force && brew cleanup
 
 USER root
 
+# Make linuxbrew home world writable
+RUN chmod -R o+w /home/linuxbrew/
+
 # Run the setup scripts
 RUN chmod +x dev.sh dev-shims.sh && /dev.sh
 
