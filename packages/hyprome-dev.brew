@@ -7,3 +7,11 @@ go
 poetry
 rustup
 pnpm
+terraform
+gitleaks
+zoxide
+yazi
+fselect
+presenterm
+mprocs
+mask
