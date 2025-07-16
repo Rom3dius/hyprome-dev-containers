@@ -7,7 +7,7 @@ go
 poetry
 rustup
 pnpm
-terraform
+tfenv
 gitleaks
 zoxide
 yazi
@@ -18,3 +18,5 @@ mask
 ruff
 shellcheck
 pre-commit
+magic-wormhole
+awscli
