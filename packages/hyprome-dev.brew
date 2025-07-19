@@ -1,5 +1,7 @@
 lazygit
 hashicorp/tap/vault
+hashicorp/tap/nomad
+s5cmd
 kubectl
 kubectx
 catimg
