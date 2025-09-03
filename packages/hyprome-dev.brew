@@ -22,3 +22,4 @@ shellcheck
 pre-commit
 magic-wormhole
 awscli
+uv
