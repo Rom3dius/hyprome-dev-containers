@@ -12,6 +12,7 @@ dnf -y install $(grep -v '^#' ./hyprome-dev.packages | xargs)
 
 # Install brew packages
 xargs brew install <hyprome-dev.brew
+brew install --cask claude-code
 
 # Optional: Clean up
 dnf clean all
