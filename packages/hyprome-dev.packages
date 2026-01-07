@@ -27,3 +27,7 @@ openssl-devel
 clang
 cmake
 jq
+ffmpegthumbnailer
+poppler-utils
+unar
+p7zip
