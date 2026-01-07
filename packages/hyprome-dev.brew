@@ -23,3 +23,6 @@ pre-commit
 magic-wormhole
 awscli
 uv
+claude-code
+snitch
+klog

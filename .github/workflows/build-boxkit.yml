@@ -17,89 +17,121 @@ env:
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
 
 jobs:
-  push-ghcr:
-    name: Build and push image
+  build-images:
+    name: Build and push images
     runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
       id-token: write
-    strategy:
-      fail-fast: false
-      matrix:
-        containerfile:
-          - hyprome-dev
-        #- fedora-example # Included as an example to demonstrate multi-image builds, uncomment to build the fedora-example container too
     steps:
-      # Clone code to runner
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
-      # Build metadata
-      - name: Image Metadata
-        uses: docker/metadata-action@902fa8ec7d6ecbf8d84d538b9b233a880e428804 # v5
-        id: meta
-        with:
-          images: |
-            ${{ matrix.containerfile }}
-          labels: |
-            io.artifacthub.package.readme-url=https://raw.githubusercontent.com/ublue-os/boxkit/main/README.md
+      - name: Maximize build space
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /opt/hostedtoolcache
+          df -h
 
-      # Build image using Buildah action
-      - name: Build Image
-        id: build_image
-        uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2
-        with:
-          containerfiles: |
-            ./ContainerFiles/${{ matrix.containerfile }}
-          image: ${{ matrix.containerfile }}
-          tags: ${{ env.IMAGE_TAGS }}
-          labels: ${{ steps.meta.outputs.labels }}
-          oci: true
-
-      # Workaround bug where capital letters in your GitHub username make it impossible to push to GHCR.
-      # https://github.com/macbre/push-to-ghcr/issues/12
       - name: Lowercase Registry
         id: registry_case
         uses: ASzc/change-string-case-action@d0603cd0a7dd490be678164909f65c7737470a7f # v6
         with:
           string: ${{ env.IMAGE_REGISTRY }}
 
-      # Push the image to GHCR (Image Registry)
-      - name: Push To GHCR
+      # Build base image first
+      - name: Build Base Image
+        id: build_base
+        uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2
+        with:
+          containerfiles: |
+            ./ContainerFiles/hyprome-dev-base
+          image: hyprome-dev-base
+          tags: ${{ env.IMAGE_TAGS }}
+          oci: true
+          extra-args: --squash
+
+      # Tag base image for local use by main image
+      - name: Tag base image for local registry
+        run: |
+          buildah tag ${{ steps.build_base.outputs.image }}:${{ env.IMAGE_TAGS }} ${{ steps.registry_case.outputs.lowercase }}/hyprome-dev-base:${{ env.IMAGE_TAGS }}
+
+      # Build main image (uses locally tagged base)
+      - name: Build Main Image
+        id: build_main
+        uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2
+        with:
+          containerfiles: |
+            ./ContainerFiles/hyprome-dev
+          image: hyprome-dev
+          tags: ${{ env.IMAGE_TAGS }}
+          oci: true
+          extra-args: --squash
+
+      # Push base image
+      - name: Push Base Image To GHCR
         uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2
         if: github.event_name != 'pull_request'
-        id: push
+        id: push_base
         env:
           REGISTRY_USER: ${{ github.actor }}
           REGISTRY_PASSWORD: ${{ github.token }}
         with:
-          image: ${{ steps.build_image.outputs.image }}
-          tags: ${{ steps.build_image.outputs.tags }}
+          image: ${{ steps.build_base.outputs.image }}
+          tags: ${{ steps.build_base.outputs.tags }}
+          registry: ${{ steps.registry_case.outputs.lowercase }}
+          username: ${{ env.REGISTRY_USER }}
+          password: ${{ env.REGISTRY_PASSWORD }}
+
+      # Push main image
+      - name: Push Main Image To GHCR
+        uses: redhat-actions/push-to-registry@5ed88d269cf581ea9ef6dd6806d01562096bee9c # v2
+        if: github.event_name != 'pull_request'
+        id: push_main
+        env:
+          REGISTRY_USER: ${{ github.actor }}
+          REGISTRY_PASSWORD: ${{ github.token }}
+        with:
+          image: ${{ steps.build_main.outputs.image }}
+          tags: ${{ steps.build_main.outputs.tags }}
           registry: ${{ steps.registry_case.outputs.lowercase }}
           username: ${{ env.REGISTRY_USER }}
           password: ${{ env.REGISTRY_PASSWORD }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
+        if: github.event_name != 'pull_request'
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Sign container
       - name: Install cosign
         uses: sigstore/cosign-installer@3454372f43399081ed03b604cb2d021dabca52bb # v3.8.2
+        if: github.event_name != 'pull_request'
 
-      - name: Sign container image
+      - name: Sign base image
         if: github.event_name != 'pull_request'
         run: |
-          cosign sign -y --key env://COSIGN_PRIVATE_KEY ${{ steps.registry_case.outputs.lowercase }}/${{ matrix.containerfile }}@${TAGS}
+          cosign sign -y --key env://COSIGN_PRIVATE_KEY ${{ steps.registry_case.outputs.lowercase }}/hyprome-dev-base@${{ steps.push_base.outputs.digest }}
         env:
-          TAGS: ${{ steps.push.outputs.digest }}
+          COSIGN_EXPERIMENTAL: false
+          COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
+
+      - name: Sign main image
+        if: github.event_name != 'pull_request'
+        run: |
+          cosign sign -y --key env://COSIGN_PRIVATE_KEY ${{ steps.registry_case.outputs.lowercase }}/hyprome-dev@${{ steps.push_main.outputs.digest }}
+        env:
           COSIGN_EXPERIMENTAL: false
           COSIGN_PRIVATE_KEY: ${{ secrets.SIGNING_SECRET }}
 
       - name: Echo outputs
+        if: github.event_name != 'pull_request'
         run: |
-          echo "${{ toJSON(steps.push.outputs) }}"
+          echo "Base image: ${{ toJSON(steps.push_base.outputs) }}"
+          echo "Main image: ${{ toJSON(steps.push_main.outputs) }}"

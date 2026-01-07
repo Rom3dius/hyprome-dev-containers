@@ -1,0 +1,18 @@
+FROM ghcr.io/ublue-os/fedora-toolbox:latest
+
+LABEL com.github.containers.toolbox="true" \
+      usage="This image is meant to be used with the toolbox or distrobox command" \
+      summary="Base layer for hyprome dev containers" \
+      maintainer="r@romedius.xyz"
+
+# Copy the setup scripts and package list
+COPY scripts/hyprome-dev-base/base.sh /tmp/
+COPY scripts/hyprome-dev/dev-shims.sh /tmp/
+COPY packages/hyprome-dev-base.packages /tmp/
+COPY packages/hyprome-dev-base.brew /tmp/
+
+# Single consolidated RUN to minimize layers
+RUN chmod +x /tmp/base.sh /tmp/dev-shims.sh && \
+    /tmp/base.sh && \
+    rm -rf /tmp/*.sh /tmp/*.packages /tmp/*.brew && \
+    chmod 0755 /home

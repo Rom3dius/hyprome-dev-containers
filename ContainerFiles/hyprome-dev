@@ -1,35 +1,19 @@
-FROM ghcr.io/ublue-os/fedora-toolbox:latest
+FROM ghcr.io/rom3dius/hyprome-dev-base:latest
 
 LABEL com.github.containers.toolbox="true" \
       usage="This image is meant to be used with the toolbox or distrobox command" \
       summary="A cloud-native terminal experience (for hyprome)" \
       maintainer="r@romedius.xyz"
 
-# Copy the setup scripts and package list
-COPY ../scripts/hyprome-dev/dev-shims.sh /
-COPY ../scripts/hyprome-dev/dev.sh /
-COPY ../packages/hyprome-dev.packages /
-COPY ../packages/hyprome-dev.brew /
+# Copy the setup scripts
+COPY scripts/hyprome-dev/dev.sh /tmp/
 
-# Install brew
-RUN useradd -m -u 1000 linuxbrew && echo 'linuxbrew ALL=(ALL) NOPASSWD:ALL' >>/etc/sudoers
-USER linuxbrew
-ENV HOME=/home/linuxbrew
-
-RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" && \
-    echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> ~/.profile
-
-ENV PATH=/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH
-RUN brew update --force && brew cleanup
-
-USER root
-
-# Make linuxbrew home world writable
-RUN chmod -R o+w /home/linuxbrew/
-
-# Run the setup scripts
-RUN chmod +x dev.sh dev-shims.sh && /dev.sh
-
-RUN chmod 0755 /home
-
-RUN rm /dev.sh /dev-shims.sh /hyprome-dev.packages
+# Install direct binaries
+# Using single RUN to minimize layers
+RUN chmod +x /tmp/dev.sh && \
+    dnf -y install unzip && \
+    /tmp/dev.sh && \
+    dnf -y remove unzip && \
+    dnf clean all && \
+    rm -rf /var/cache/dnf /tmp/*.sh && \
+    chmod 0755 /home

@@ -1,0 +1,35 @@
+# Core shell and terminal tools
+zsh
+fzf
+ripgrep
+bat
+lsd
+btop
+ncdu
+
+# Git and version control
+gh
+yadm
+gnupg
+age
+
+# Development essentials
+neovim
+just
+make
+cmake
+clang
+python3
+npm
+
+# System utilities
+curl
+jq
+zstd
+direnv
+fastfetch
+plocate
+dbus
+ca-certificates
+openssl-devel
+speedtest-cli
