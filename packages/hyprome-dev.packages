@@ -16,7 +16,6 @@ make
 neovim
 python3
 ripgrep
-fastfetch
 lsd
 plocate
 btop
@@ -31,3 +30,4 @@ ffmpegthumbnailer
 poppler-utils
 unar
 p7zip
+starship
