@@ -44,6 +44,11 @@ export RUSTUP_HOME=/opt/rust/rustup
 export CARGO_HOME=/opt/rust/cargo
 mkdir -p /opt/rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path
+
+# Add WASM target
+export PATH="/opt/rust/cargo/bin:$PATH"
+rustup target add wasm32-unknown-unknown
+
 chmod -R o+rwX /opt/rust
 
 # Create profile script to set Rust environment

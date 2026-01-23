@@ -19,6 +19,7 @@ just
 make
 cmake
 clang
+mold
 python3
 npm
 
