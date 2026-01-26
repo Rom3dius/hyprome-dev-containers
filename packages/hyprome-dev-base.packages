@@ -34,3 +34,4 @@ dbus
 ca-certificates
 openssl-devel
 speedtest-cli
+dig

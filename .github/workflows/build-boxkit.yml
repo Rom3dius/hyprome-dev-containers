@@ -53,7 +53,7 @@ jobs:
           image: hyprome-dev-base
           tags: ${{ env.IMAGE_TAGS }}
           oci: true
-          extra-args: --squash
+          extra-args: --squash --no-cache
 
       # Tag base image for local use by main image
       - name: Tag base image for local registry
@@ -70,7 +70,7 @@ jobs:
           image: hyprome-dev
           tags: ${{ env.IMAGE_TAGS }}
           oci: true
-          extra-args: --squash
+          extra-args: --squash --no-cache
 
       # Push base image
       - name: Push Base Image To GHCR
