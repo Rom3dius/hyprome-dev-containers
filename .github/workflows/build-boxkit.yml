@@ -60,7 +60,17 @@ jobs:
         run: |
           buildah tag ${{ steps.build_base.outputs.image }}:${{ env.IMAGE_TAGS }} ${{ steps.registry_case.outputs.lowercase }}/hyprome-dev-base:${{ env.IMAGE_TAGS }}
 
-      # Build main image (uses locally tagged base)
+      # Stage GITHUB_TOKEN for the main image as a build secret so it does
+      # not leak into image history (as --build-arg would).
+      - name: Stage GitHub token as build secret
+        run: |
+          install -d -m 0700 "${RUNNER_TEMP}/secrets"
+          printf '%s' "${{ secrets.GITHUB_TOKEN }}" > "${RUNNER_TEMP}/secrets/github_token"
+          chmod 0600 "${RUNNER_TEMP}/secrets/github_token"
+
+      # Build main image. --pull=never forces buildah to use the locally
+      # tagged base from the previous step instead of pulling the
+      # already-published (stale) base from ghcr.
       - name: Build Main Image
         id: build_main
         uses: redhat-actions/buildah-build@7a95fa7ee0f02d552a32753e7414641a04307056 # v2
@@ -70,9 +80,11 @@ jobs:
           image: hyprome-dev
           tags: ${{ env.IMAGE_TAGS }}
           oci: true
-          build-args: |
-            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-          extra-args: --squash --no-cache
+          extra-args: --squash --no-cache --pull=never --secret=id=github_token,src=${{ runner.temp }}/secrets/github_token
+
+      - name: Remove staged token
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/secrets/github_token"
 
       # Push base image
       - name: Push Base Image To GHCR

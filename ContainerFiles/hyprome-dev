@@ -8,15 +8,14 @@ LABEL com.github.containers.toolbox="true" \
 # Copy the setup scripts
 COPY scripts/hyprome-dev/dev.sh /tmp/
 
-# Pass through a GitHub token (when available) so api.github.com calls
-# in dev.sh aren't rate-limited (anonymous = 60/hr; authenticated = 5000/hr).
-ARG GITHUB_TOKEN=
-
-# Install direct binaries
-# Using single RUN to minimize layers
-RUN chmod +x /tmp/dev.sh && \
+# Install direct binaries. github_token is mounted as a build secret so
+# api.github.com calls in dev.sh aren't rate-limited (anonymous = 60/hr;
+# authenticated = 5000/hr). The mount only lives for this RUN and is not
+# persisted into image history or the final filesystem.
+RUN --mount=type=secret,id=github_token \
+    chmod +x /tmp/dev.sh && \
     dnf -y install unzip && \
-    GITHUB_TOKEN="${GITHUB_TOKEN}" /tmp/dev.sh && \
+    GITHUB_TOKEN="$(cat /run/secrets/github_token 2>/dev/null || true)" /tmp/dev.sh && \
     dnf -y remove unzip && \
     dnf clean all && \
     rm -rf /var/cache/dnf /tmp/*.sh && \
