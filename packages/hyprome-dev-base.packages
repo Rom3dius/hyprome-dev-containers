@@ -35,3 +35,9 @@ ca-certificates
 openssl-devel
 speedtest-cli
 dig
+
+# Yazi preview helpers
+ffmpegthumbnailer
+poppler-utils
+unar
+p7zip

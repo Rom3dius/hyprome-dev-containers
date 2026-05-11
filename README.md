@@ -102,11 +102,11 @@ systemctl --user start hyprome-dev
 
 ### Adding Fedora Packages
 
-Edit `packages/hyprome-dev.packages` - one package per line.
+Edit `packages/hyprome-dev-base.packages` - one package per line.
 
 ### Adding Homebrew Packages
 
-Edit `packages/hyprome-dev.brew` - one package per line.
+Edit `packages/hyprome-dev-base.brew` - one package per line.
 
 ### Adding Host Command Shims
 
