@@ -70,6 +70,8 @@ jobs:
           image: hyprome-dev
           tags: ${{ env.IMAGE_TAGS }}
           oci: true
+          build-args: |
+            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
           extra-args: --squash --no-cache
 
       # Push base image

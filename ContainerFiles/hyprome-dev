@@ -8,11 +8,15 @@ LABEL com.github.containers.toolbox="true" \
 # Copy the setup scripts
 COPY scripts/hyprome-dev/dev.sh /tmp/
 
+# Pass through a GitHub token (when available) so api.github.com calls
+# in dev.sh aren't rate-limited (anonymous = 60/hr; authenticated = 5000/hr).
+ARG GITHUB_TOKEN=
+
 # Install direct binaries
 # Using single RUN to minimize layers
 RUN chmod +x /tmp/dev.sh && \
     dnf -y install unzip && \
-    /tmp/dev.sh && \
+    GITHUB_TOKEN="${GITHUB_TOKEN}" /tmp/dev.sh && \
     dnf -y remove unzip && \
     dnf clean all && \
     rm -rf /var/cache/dnf /tmp/*.sh && \
