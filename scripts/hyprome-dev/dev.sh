@@ -79,4 +79,14 @@ chmod +x s5cmd
 mv s5cmd "$INSTALL_DIR/"
 rm -f "s5cmd_${S5CMD_VERSION}_Linux-64bit.tar.gz"
 
+# Install Ollama (official bundle — brew's formula ships CPU-only on Linux,
+# so we pull the upstream tarball that bundles the ROCm/CUDA runner libs).
+echo "Installing Ollama..."
+OLLAMA_VERSION=$(latest_tag ollama/ollama)
+OLLAMA_PREFIX="/usr/local"
+install -o0 -g0 -m755 -d "${OLLAMA_PREFIX}/lib/ollama"
+curl -fsSL "https://github.com/ollama/ollama/releases/download/${OLLAMA_VERSION}/ollama-linux-amd64.tar.zst" \
+    | zstd -d \
+    | tar -xf - -C "${OLLAMA_PREFIX}"
+
 echo "=== Direct binary installs complete ==="

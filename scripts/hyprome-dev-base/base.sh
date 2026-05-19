@@ -12,7 +12,7 @@ dnf -y copr enable cdayjr/yadm
 
 # Update and install packages using dnf
 dnf -y update
-dnf -y install $(grep -v '^#' /tmp/hyprome-dev-base.packages | xargs)
+dnf -y install --skip-unavailable $(grep -v '^#' /tmp/hyprome-dev-base.packages | xargs)
 
 # Clean up DNF cache immediately
 dnf clean all
